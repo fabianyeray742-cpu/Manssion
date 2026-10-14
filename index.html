@@ -7,6 +7,8 @@
     <title>LA MANSION · Control de acceso</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap">
+    <!-- Librería para escanear QR con la cámara -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
         :root {--bg:#100d12;--panel:#1a151d;--panel-border:#2e2532;--orange:#f97316;--orange-hover:#ea580c;--text:#f3f4f6;--muted:#9ca3af;}
         *{box-sizing:border-box}
@@ -14,7 +16,7 @@
         h1,h2,h3,.brand{font-family:'Cinzel',serif;}
         .login-wrap{width:100%;max-width:420px;background:var(--panel);border:1px solid var(--panel-border);border-radius:16px;padding:32px;text-align:center;box-shadow:0 10px 25px rgba(0,0,0,0.5);display:none;}
         .login-wrap.active{display:block;}
-        .app-wrap{width:100%;max-width:600px;display:none;}
+        .app-wrap{width:100%;max-width:600px;display:none;width:100%;}
         .app-header{display:flex;justify-content:space-between;align-items:center;background:var(--panel);border:1px solid var(--panel-border);padding:16px 24px;border-radius:12px;margin-bottom:16px;}
         .tabs{display:flex;gap:6px;margin-bottom:20px;}
         .tab-btn{flex:1;background:var(--panel);border:1px solid var(--panel-border);color:var(--muted);padding:10px 8px;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;transition:0.2s;text-align:center;}
@@ -27,15 +29,17 @@
         input:focus,select:focus{outline:none;border-color:var(--orange);}
         .btn-primary{width:100%;background:var(--orange);color:#fff;border:none;padding:14px;border-radius:8px;font-weight:700;cursor:pointer;font-size:16px;transition:0.2s;}
         .btn-primary:hover{background:var(--orange-hover);}
+        .btn-secondary{width:100%;background:#374151;color:#fff;border:none;padding:12px;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;margin-bottom:16px;}
         .error{color:#ef4444;font-size:13px;margin-top:10px;}
         .ticket-card{background:#100d12;border:1px solid var(--panel-border);border-radius:12px;padding:20px;text-align:center;margin-top:20px;}
         .ticket-card img{margin-bottom:12px;border-radius:8px;background:#fff;padding:8px;}
         .btn-download{display:inline-block;background:#374151;color:#fff;text-decoration:none;padding:8px 16px;border-radius:6px;font-size:14px;margin-top:12px;}
         .btn-download:hover{background:#4b5563;}
         .list-item{display:flex;justify-content:space-between;padding:12px;border-bottom:1px solid var(--panel-border);font-size:14px;}
-        .validation-result{margin-top:16px;padding:16px;border-radius:8px;text-align:center;font-weight:600;display:none;}
+        .validation-result{margin-top:16px;padding:16px;border-radius:8px;text-align:center;font-weight:600;display:none;font-size:16px;}
         .validation-result.success{background:rgba(16, 185, 129, 0.15);color:#10b981;border:1px solid #10b981;}
         .validation-result.error{background:rgba(239, 68, 68, 0.15);color:#ef4444;border:1px solid #ef4444;}
+        #reader{width:100%;border-radius:8px;overflow:hidden;background:#000;margin-bottom:16px;}
     </style>
 </head>
 <body>
@@ -67,7 +71,7 @@
 
         <div class="tabs">
             <button class="tab-btn active" data-target="panel-create">Crear QR</button>
-            <button class="tab-btn" data-target="panel-validate">Validar</button>
+            <button class="tab-btn" data-target="panel-validate" id="btnTabValidate">Validar</button>
             <button class="tab-btn" data-target="panel-list" onclick="loadList()">Entradas</button>
         </div>
 
@@ -97,11 +101,16 @@
 
         <!-- Panel Validar -->
         <div id="panel-validate" class="panel">
-            <h3 style="margin-top:0;">Validar Código de Entrada</h3>
+            <h3 style="margin-top:0;">Validar Código / Escanear QR</h3>
+            
+            <!-- Visor de Cámara -->
+            <div id="reader"></div>
+            <button id="btnToggleCamera" class="btn-secondary">📷 Abrir Escáner de Cámara</button>
+
             <form id="validateForm">
                 <div class="field">
-                    <label>Código del Ticket</label>
-                    <input type="text" id="validateCodeInput" placeholder="Ej. A1B2C3D4" required style="text-transform:uppercase;">
+                    <label>O ingresa el Código Manualmente</label>
+                    <input type="text" id="validateCodeInput" placeholder="Ej. A1B2C3D4" style="text-transform:uppercase;">
                 </div>
                 <button type="submit" class="btn-primary">Verificar Acceso</button>
             </form>
@@ -119,6 +128,8 @@
 
     <script>
         const $ = id => document.getElementById(id);
+        let html5QrcodeScanner = null;
+        let isScannerRunning = false;
 
         async function api(url, options={}) {
             const r = await fetch(url, {...options, headers: {'Content-Type': 'application/json', ...options.headers}});
@@ -153,6 +164,7 @@
         });
 
         $('logout').addEventListener('click', async () => {
+            stopCamera();
             await api('/api/logout', {method:'POST'});
             location.reload();
         });
@@ -163,6 +175,11 @@
                 document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
                 btn.classList.add('active');
                 $(btn.dataset.target).classList.add('active');
+
+                // Si se sale de la pestaña de validar, detener la cámara
+                if(btn.dataset.target !== 'panel-validate') {
+                    stopCamera();
+                }
             });
         });
 
@@ -181,9 +198,8 @@
             }
         });
 
-        $('validateForm').addEventListener('submit', async e => {
-            e.preventDefault();
-            const code = $('validateCodeInput').value.trim();
+        // Función para enviar código a validar al servidor
+        async function processValidation(code) {
             const resultDiv = $('validationResult');
             resultDiv.style.display = 'none';
             try {
@@ -191,17 +207,64 @@
                 resultDiv.style.display = 'block';
                 if(res.valid) {
                     resultDiv.className = 'validation-result success';
-                    resultDiv.innerHTML = `¡Acceso Concedido!<br><small>${res.ticket.guest} (${res.ticket.ticket_type})</small>`;
+                    resultDiv.innerHTML = `✅ ¡Acceso Concedido!<br><small>${res.ticket.guest} (${res.ticket.ticket_type})</small>`;
                 } else {
                     resultDiv.className = 'validation-result error';
-                    resultDiv.innerHTML = res.error || 'Acceso Denegado';
+                    resultDiv.innerHTML = `❌ ${res.error || 'Acceso Denegado'}`;
                 }
             } catch(err) {
                 resultDiv.style.display = 'block';
                 resultDiv.className = 'validation-result error';
-                resultDiv.innerHTML = err.message;
+                resultDiv.innerHTML = `❌ ${err.message}`;
+            }
+        }
+
+        $('validateForm').addEventListener('submit', async e => {
+            e.preventDefault();
+            const code = $('validateCodeInput').value.trim();
+            if(code) processValidation(code);
+        });
+
+        // Controles de Cámara
+        $('btnToggleCamera').addEventListener('click', () => {
+            if(isScannerRunning) {
+                stopCamera();
+            } else {
+                startCamera();
             }
         });
+
+        function startCamera() {
+            if(isScannerRunning) return;
+            html5QrcodeScanner = new Html5Qrcode("reader");
+            html5QrcodeScanner.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: { width: 220, height: 220 } },
+                (decodedText) => {
+                    // Al escanear exitosamente
+                    $('validateCodeInput').value = decodedText;
+                    processValidation(decodedText);
+                },
+                (errorMessage) => {
+                    // Ignorar errores continuos de búsqueda de frame
+                }
+            ).then(() => {
+                isScannerRunning = true;
+                $('btnToggleCamera').textContent = "⏹ Detener Cámara";
+            }).catch(err => {
+                alert("No se pudo acceder a la cámara o requiere permisos.");
+            });
+        }
+
+        function stopCamera() {
+            if(html5QrcodeScanner && isScannerRunning) {
+                html5QrcodeScanner.stop().then(() => {
+                    isScannerRunning = false;
+                    $('btnToggleCamera').textContent = "📷 Abrir Escáner de Cámara";
+                    $('reader').innerHTML = "";
+                }).catch(err => console.error(err));
+            }
+        }
 
         function renderResult(tickets) {
             const container = $('resultContainer');
