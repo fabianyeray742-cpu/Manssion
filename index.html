@@ -9,13 +9,13 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap">
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
-        :root {--bg:#09070a;--panel:#141017;--panel-border:#3b2413;--orange:#f97316;--orange-hover:#ea580c;--text:#f3f4f6;--muted:#9ca3af;}
+        :root {--bg:#100d12;--panel:#1a151d;--panel-border:#2e2532;--orange:#f97316;--orange-hover:#ea580c;--text:#f3f4f6;--muted:#9ca3af;}
         *{box-sizing:border-box}
         body{margin:0;background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;}
         h1,h2,h3,.brand{font-family:'Cinzel',serif;}
-        .login-wrap{width:100%;max-width:420px;background:var(--panel);border:1px solid var(--orange);border-radius:16px;padding:32px;text-align:center;box-shadow:0 10px 25px rgba(249,115,22,0.2);display:none;}
+        .login-wrap{width:100%;max-width:420px;background:var(--panel);border:1px solid var(--panel-border);border-radius:16px;padding:32px;text-align:center;box-shadow:0 10px 25px rgba(0,0,0,0.5);display:none;}
         .login-wrap.active{display:block;}
-        .app-wrap{width:100%;max-width:600px;display:none;}
+        .app-wrap{width:100%;max-width:600px;display:none;width:100%;}
         .app-header{display:flex;justify-content:space-between;align-items:center;background:var(--panel);border:1px solid var(--panel-border);padding:16px 24px;border-radius:12px;margin-bottom:16px;}
         .tabs{display:flex;gap:6px;margin-bottom:20px;}
         .tab-btn{flex:1;background:var(--panel);border:1px solid var(--panel-border);color:var(--muted);padding:10px 8px;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;transition:0.2s;text-align:center;}
@@ -23,53 +23,46 @@
         .panel{background:var(--panel);border:1px solid var(--panel-border);border-radius:12px;padding:24px;display:none;}
         .panel.active{display:block;}
         .field{margin-bottom:16px;text-align:left;}
-        label{display:block;font-size:12px;font-weight:600;color:var(--orange);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;}
-        input,select{width:100%;background:#09070a;border:1px solid var(--panel-border);color:var(--text);padding:12px;border-radius:8px;font-size:15px;}
+        label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;}
+        input,select{width:100%;background:#100d12;border:1px solid var(--panel-border);color:var(--text);padding:12px;border-radius:8px;font-size:15px;}
         input:focus,select:focus{outline:none;border-color:var(--orange);}
         .btn-primary{width:100%;background:var(--orange);color:#fff;border:none;padding:14px;border-radius:8px;font-weight:700;cursor:pointer;font-size:16px;transition:0.2s;}
         .btn-primary:hover{background:var(--orange-hover);}
-        .btn-secondary{width:100%;background:#261821;color:#fff;border:1px solid var(--orange);padding:12px;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;margin-bottom:16px;}
+        .btn-secondary{width:100%;background:#374151;color:#fff;border:none;padding:12px;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;margin-bottom:16px;}
         .error{color:#ef4444;font-size:13px;margin-top:10px;}
-        
-        /* DISEÑO TICKET HALLOWEEN */
-        .ticket-card{background:linear-gradient(145deg, #18111d, #0f0b12);border:2px solid var(--orange);border-radius:16px;padding:24px;text-align:center;margin-top:20px;box-shadow:0 8px 20px rgba(249,115,22,0.15);position:relative;overflow:hidden;}
-        .ticket-card::before{content:"🎃 LA MANSIÓN · HALLOWEEN NIGHT 🎃";display:block;font-family:'Cinzel',serif;font-size:11px;color:var(--orange);letter-spacing:1px;margin-bottom:12px;font-weight:700;}
-        .ticket-card img{margin:8px 0;border-radius:12px;background:#fff;padding:10px;border:2px solid var(--orange);}
-        .guest-name{font-family:'Cinzel',serif;font-size:20px;color:#fff;margin:8px 0 4px 0;font-weight:700;}
-        .ticket-info{color:var(--muted);font-size:13px;margin-bottom:16px;}
-        
-        .btn-download{display:inline-block;background:var(--orange);color:#fff;border:none;padding:12px 20px;border-radius:8px;font-size:14px;cursor:pointer;font-weight:700;box-shadow:0 4px 12px rgba(249,115,22,0.3);}
-        .btn-download:hover{background:var(--orange-hover);}
-        
+        .ticket-card{background:#100d12;border:1px solid var(--panel-border);border-radius:12px;padding:20px;text-align:center;margin-top:20px;}
+        .ticket-card img{margin-bottom:12px;border-radius:8px;background:#fff;padding:8px;}
+        .btn-download{display:inline-block;background:#374151;color:#fff;border:none;padding:10px 18px;border-radius:6px;font-size:14px;margin-top:12px;cursor:pointer;font-weight:600;}
+        .btn-download:hover{background:#4b5563;}
         .list-item{display:flex;justify-content:space-between;padding:12px;border-bottom:1px solid var(--panel-border);font-size:14px;}
         .validation-result{margin-top:16px;padding:16px;border-radius:8px;text-align:center;font-weight:600;display:none;font-size:16px;}
         .validation-result.success{background:rgba(16, 185, 129, 0.15);color:#10b981;border:1px solid #10b981;}
         .validation-result.error{background:rgba(239, 68, 68, 0.15);color:#ef4444;border:1px solid #ef4444;}
         #reader{width:100%;border-radius:8px;overflow:hidden;background:#000;margin-bottom:16px;}
         
-        /* Modal Halloween */
-        #qrModal {position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);display:none;justify-content:center;align-items:center;z-index:9999;padding:20px;}
-        .modal-content{background:linear-gradient(145deg, #18111d, #0f0b12);border:2px solid var(--orange);padding:24px;border-radius:16px;text-align:center;max-width:340px;width:100%;box-shadow:0 0 25px rgba(249,115,22,0.3);}
-        .modal-content img{width:220px;height:220px;background:#fff;padding:8px;border-radius:8px;margin:12px 0;border:2px solid var(--orange);}
-        .btn-close{background:#261821;color:var(--orange);border:1px solid var(--orange);padding:10px;border-radius:8px;width:100%;font-weight:700;cursor:pointer;margin-top:12px;}
+        /* Estilo para el Modal de Pantalla Completa */
+        #qrModal {position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);display:none;justify-content:center;align-items:center;z-index:9999;padding:20px;}
+        .modal-content{background:var(--panel);border:1px solid var(--panel-border);padding:24px;border-radius:16px;text-align:center;max-width:320px;width:100%;}
+        .modal-content img{width:220px;height:220px;background:#fff;padding:8px;border-radius:8px;margin-bottom:16px;}
+        .btn-close{background:#ef4444;color:#fff;border:none;padding:10px;border-radius:8px;width:100%;font-weight:700;cursor:pointer;margin-top:12px;}
     </style>
 </head>
 <body>
 
     <!-- LOGIN -->
     <div id="login" class="login-wrap active">
-        <h2 style="color:var(--orange);margin-bottom:8px;">🎃 LA MANSION 🎃</h2>
-        <p style="color:var(--muted);font-size:14px;margin-bottom:24px;">Acceso a la Noche de Terror</p>
+        <h2 style="color:var(--orange);margin-bottom:8px;">LA MANSION</h2>
+        <p style="color:var(--muted);font-size:14px;margin-bottom:24px;">Control de acceso exclusivo</p>
         <form id="loginForm">
             <div class="field">
                 <label>Usuario</label>
-                <input type="text" id="username" required placeholder="Usuario">
+                <input type="text" id="username" required placeholder="Escribe tu usuario">
             </div>
             <div class="field">
                 <label>Contraseña</label>
-                <input type="password" id="password" required placeholder="Contraseña">
+                <input type="password" id="password" required placeholder="Escribe tu contraseña">
             </div>
-            <button type="submit" class="btn-primary">Ingresar al Inframundo</button>
+            <button type="submit" class="btn-primary">Ingresar</button>
             <div id="loginError" class="error"></div>
         </form>
     </div>
@@ -77,50 +70,50 @@
     <!-- APP PRINCIPAL -->
     <div id="app" class="app-wrap">
         <div class="app-header">
-            <h3 style="margin:0;color:var(--orange);">🎃 LA MANSION</h3>
+            <h3 style="margin:0;color:var(--orange);">LA MANSION</h3>
             <button id="logout" style="background:none;border:1px solid var(--panel-border);color:var(--muted);padding:6px 12px;border-radius:6px;cursor:pointer;">Salir</button>
         </div>
 
         <div class="tabs">
-            <button class="tab-btn active" data-target="panel-create">Crear Entrada</button>
-            <button class="tab-btn" data-target="panel-validate" id="btnTabValidate">Validar QR</button>
-            <button class="tab-btn" data-target="panel-list" onclick="loadList()">Lista</button>
+            <button class="tab-btn active" data-target="panel-create">Crear QR</button>
+            <button class="tab-btn" data-target="panel-validate" id="btnTabValidate">Validar</button>
+            <button class="tab-btn" data-target="panel-list" onclick="loadList()">Entradas</button>
         </div>
 
         <!-- Panel Crear -->
         <div id="panel-create" class="panel active">
-            <h3 style="margin-top:0;color:var(--orange);">🦇 Generar Ticket Halloween</h3>
+            <h3 style="margin-top:0;">Generar Nueva Entrada</h3>
             <form id="generateForm">
                 <div class="field">
                     <label>Nombre del Invitado</label>
-                    <input type="text" id="guest" placeholder="Ej. Conde Drácula">
+                    <input type="text" id="guest" placeholder="Ej. Juan Pérez">
                 </div>
                 <div class="field">
                     <label>Tipo de Entrada</label>
                     <select id="ticketType">
-                        <option value="General">General (Terror)</option>
-                        <option value="VIP">VIP (Oscuridad Total)</option>
+                        <option value="General">General</option>
+                        <option value="VIP">VIP</option>
                     </select>
                 </div>
                 <div class="field">
                     <label>Cantidad</label>
                     <input type="number" id="quantity" value="1" min="1" max="50">
                 </div>
-                <button type="submit" class="btn-primary">Generar Ticket</button>
+                <button type="submit" class="btn-primary">Generar Código(s)</button>
             </form>
             <div id="resultContainer"></div>
         </div>
 
         <!-- Panel Validar -->
         <div id="panel-validate" class="panel">
-            <h3 style="margin-top:0;color:var(--orange);">🦇 Validación de Accesos</h3>
+            <h3 style="margin-top:0;">Validar Código / Escanear QR</h3>
             
             <div id="reader"></div>
-            <button id="btnToggleCamera" class="btn-secondary">📷 Abrir Escáner</button>
+            <button id="btnToggleCamera" class="btn-secondary">📷 Abrir Escáner de Cámara</button>
 
             <form id="validateForm">
                 <div class="field">
-                    <label>O código manual</label>
+                    <label>O ingresa el Código Manualmente</label>
                     <input type="text" id="validateCodeInput" placeholder="Ej. A1B2C3D4" style="text-transform:uppercase;">
                 </div>
                 <button type="submit" class="btn-primary">Verificar Acceso</button>
@@ -130,20 +123,19 @@
 
         <!-- Panel Listar -->
         <div id="panel-list" class="panel">
-            <h3 style="margin-top:0;color:var(--orange);">👻 Entradas Registradas</h3>
+            <h3 style="margin-top:0;">Entradas Registradas</h3>
             <div id="ticketList" style="max-height:350px;overflow-y:auto;">
-                <p style="color:var(--muted);text-align:center;">Cargando...</p>
+                <p style="color:var(--muted);text-align:center;">Cargando lista...</p>
             </div>
         </div>
     </div>
 
-    <!-- MODAL HALLOWEEN -->
+    <!-- MODAL PARA VER Y GUARDAR QR -->
     <div id="qrModal">
         <div class="modal-content">
-            <h4 style="margin:0 0 4px 0;color:var(--orange);font-family:'Cinzel',serif;">🎃 LA MANSIÓN 🎃</h4>
-            <h3 id="modalGuest" style="margin:4px 0;color:#fff;">Invitado</h3>
-            <img id="modalImage" src="" alt="QR">
-            <p style="font-size:11px;color:var(--muted);margin:0 0 12px 0;">Mantén presionada la imagen para guardarla.</p>
+            <h3 id="modalTitle" style="margin-top:0;color:var(--orange);">Código QR</h3>
+            <img id="modalImage" src="" alt="QR Ampliado">
+            <p style="font-size:12px;color:var(--muted);margin:0 0 12px 0;">Mantén presionada la imagen para guardarla en tu celular.</p>
             <button class="btn-close" onclick="closeModal()">Cerrar</button>
         </div>
     </div>
@@ -280,7 +272,7 @@
                 isScannerRunning = true;
                 $('btnToggleCamera').textContent = "⏹ Detener Cámara";
             }).catch(err => {
-                alert("No se pudo acceder a la cámara.");
+                alert("No se pudo acceder a la cámara o requiere permisos.");
             });
         }
 
@@ -288,7 +280,7 @@
             if(html5QrcodeScanner && isScannerRunning) {
                 html5QrcodeScanner.stop().then(() => {
                     isScannerRunning = false;
-                    $('btnToggleCamera').textContent = "📷 Abrir Escáner";
+                    $('btnToggleCamera').textContent = "📷 Abrir Escáner de Cámara";
                     $('reader').innerHTML = "";
                 }).catch(err => console.error(err));
             }
@@ -301,18 +293,19 @@
                 const card = document.createElement('div');
                 card.className = 'ticket-card';
                 card.innerHTML = `
-                    <div class="guest-name">${ticket.guest || 'Invitado'}</div>
-                    <div class="ticket-info">${ticket.ticket_type} · ID: ${ticket.code}</div>
-                    <img src="${ticket.qr_image}" alt="Código QR" style="width:170px;height:170px;"/>
+                    <img src="${ticket.qr_image}" alt="Código QR" style="width:180px;height:180px;"/>
+                    <h4 style="margin:8px 0 4px 0;">${ticket.guest || 'Invitado'}</h4>
+                    <p style="margin:0;color:var(--muted);font-size:13px;">${ticket.ticket_type} · ${ticket.code}</p>
                     <br>
-                    <button class="btn-download" onclick="openModal('${ticket.qr_image}', '${ticket.guest}')">🦇 Ver / Guardar Ticket</button>
+                    <button class="btn-download" onclick="openModal('${ticket.qr_image}', '${ticket.guest}')">Ver / Guardar Imagen</button>
                 `;
                 container.appendChild(card);
             });
         }
 
         function openModal(dataUrl, guestName) {
-            $('modalGuest').textContent = guestName \vert{}\vert{} 'Invitado';$('modalImage').src = dataUrl;
+            $('modalTitle').textContent = guestName ? `QR · ${guestName}` : 'Código QR';
+            $('modalImage').src = dataUrl;
             $('qrModal').style.display = 'flex';
         }
 
@@ -333,7 +326,7 @@
                         listDiv.appendChild(item);
                     });
                 } else {
-                    listDiv.innerHTML = '<p style="color:var(--muted);text-align:center;">No hay entradas creadas.</p>';
+                    listDiv.innerHTML = '<p style="color:var(--muted);text-align:center;">No hay entradas creadas aún.</p>';
                 }
             } catch(e) { 
                 console.error(e); 
