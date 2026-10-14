@@ -1,91 +1,207 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#100d12">
-<title>LA MANSION · Control de acceso</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-:root{--bg:#100d12;--panel:#1a151d;--panel2:#211a24;--orange:#f47a21;--gold:#ffb45d;--muted:#a89eab;--line:#392c3c;--green:#3bd18a;--red:#ff626b}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -15%,#48251c 0,transparent 45%),linear-gradient(145deg,#0d0a10,#17111b 65%,#0c090e);color:#f9f1fa;font-family:Inter,system-ui,sans-serif;min-height:100vh}
-body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.13;background-image:radial-gradient(#f5a35a .7px,transparent .7px);background-size:23px 23px}
-button,input,select{font:inherit}button{cursor:pointer}.hidden{display:none!important}.login-wrap{min-height:100vh;display:grid;place-items:center;padding:22px;position:relative;overflow:hidden}
-.moon{position:absolute;top:7%;right:12%;width:110px;height:110px;border-radius:50%;background:#ffe3b1;box-shadow:0 0 55px #ff9b4a55;opacity:.8}
-.bat{position:absolute;color:#3b273c;font-size:35px}.bat.one{top:14%;left:14%}.bat.two{top:29%;right:9%;font-size:24px}.login-card{width:min(100%,430px);position:relative;background:linear-gradient(160deg,#211923ed,#110e14f5);border:1px solid #66452f;border-radius:24px;padding:34px 30px;box-shadow:0 24px 90px #0009,0 0 0 5px #21151b88;text-align:center}
-.emblem{width:76px;height:76px;margin:0 auto 15px;display:grid;place-items:center;border:1px solid #bd6d32;border-radius:50%;font-size:37px;background:#301c1b;box-shadow:0 0 32px #f47a2122}
-h1,h2,h3,.brand{font-family:Cinzel,Georgia,serif}h1{font-size:clamp(30px,8vw,42px);letter-spacing:3px;margin:0;color:#fff1de;text-shadow:0 2px 20px #ff7a2133}.subtitle{font-size:10px;letter-spacing:4px;color:var(--orange);font-weight:700;margin:9px 0 27px}.hint{color:var(--muted);font-size:13px;margin:0 0 24px}
-.field{text-align:left;margin:15px 0}.field label{display:block;font-size:10px;letter-spacing:2px;font-weight:700;color:#d4bdcc;margin:0 0 8px}.field input,.field select{width:100%;border:1px solid #493749;background:#100d13;color:#fff;border-radius:11px;padding:14px 14px;outline:none}.field input:focus,.field select:focus{border-color:var(--orange);box-shadow:0 0 0 3px #f47a2120}
-.primary{border:0;border-radius:11px;background:linear-gradient(100deg,#ed6817,#ff9b37);color:#1c100a;font-weight:800;padding:14px 18px;width:100%;box-shadow:0 8px 25px #f47a2126}.primary:hover{filter:brightness(1.08)}.error{color:#ff858b;font-size:13px;min-height:20px;margin:10px 0}.tiny{font-size:11px;color:#8f818f;margin-top:20px}
-.app{max-width:1150px;margin:auto;padding:24px 18px 60px;position:relative}.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:25px}.brand{display:flex;align-items:center;gap:12px;font-size:23px;letter-spacing:1.5px}.brand-icon{font-size:29px}.brand small{display:block;font:700 9px Inter,sans-serif;color:var(--orange);letter-spacing:3px;margin-top:3px}.logout{border:1px solid var(--line);background:#211a24;color:#e9dce8;border-radius:10px;padding:10px 14px}
-.hero{border:1px solid #51382c;border-radius:20px;padding:24px;background:linear-gradient(110deg,#281a20,#19131d 65%,#281a18);margin-bottom:20px;position:relative;overflow:hidden}.hero:after{content:"☠";position:absolute;right:24px;top:-18px;font-size:120px;color:#f47a210e}.eyebrow{color:var(--orange);font-size:10px;font-weight:800;letter-spacing:3px}.hero h2{font-size:clamp(23px,4vw,32px);margin:9px 0}.hero p{color:#b6a9b8;margin:0;font-size:13px;line-height:1.7}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin-bottom:20px}.stat{background:#1a151d;border:1px solid var(--line);border-radius:15px;padding:17px}.stat span{font-size:12px;color:var(--muted)}.stat strong{display:block;font-size:30px;margin-top:8px}.stat strong.orange{color:var(--gold)}
-.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}.tab{border:1px solid var(--line);border-radius:10px;background:#1a151d;color:#c7b8c9;padding:11px 14px;font-size:13px}.tab.active{background:#3a211b;border-color:#a95728;color:#ffc17e}
-.panel{background:#1a151d;border:1px solid var(--line);border-radius:17px;padding:20px;margin-bottom:18px}.panel h3{margin:0 0 6px;font-size:19px}.muted{color:var(--muted);font-size:13px;line-height:1.6}.form-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;align-items:end}.form-grid .field{margin:10px 0}.form-grid .primary{height:47px}
-.result-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-top:18px}.ticket{background:#100d13;border:1px dashed #6e4b38;border-radius:13px;padding:15px;text-align:center}.ticket img{width:140px;max-width:100%;background:white;border-radius:8px;padding:6px}.ticket b{display:block;margin:10px 0 4px}.ticket small{color:var(--muted)}.ticket button{margin-top:10px;border:1px solid var(--line);background:#241b25;color:#f8eaf5;border-radius:8px;padding:8px 10px}
-.scanner-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}.scanbox{background:#100d13;border:1px dashed #67422f;border-radius:14px;padding:14px}.scanbox input{width:100%;background:#211a24;border:1px solid var(--line);padding:12px;color:white;border-radius:9px;margin:9px 0}.scan-result{padding:17px;border-radius:12px;margin-top:14px;background:#211a24;border:1px solid var(--line)}.scan-result.good{border-color:#1d8b5b;background:#10271e}.scan-result.bad{border-color:#a73841;background:#2b151a}.scan-result h3{font-size:21px;margin:0 0 7px}.scan-result.good h3{color:var(--green)}.scan-result.bad h3{color:#ff777e}
-#reader{width:100%;max-width:440px;margin:12px auto;overflow:hidden;border-radius:10px}#reader video{border-radius:10px}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:12px;border-bottom:1px solid #342a37;white-space:nowrap}th{color:#a99baa;font-size:10px;letter-spacing:1px}td{color:#eadfeb}.status{font-size:10px;font-weight:800;padding:5px 8px;border-radius:99px}.status.used{background:#3b2026;color:#ff8a91}.status.pending{background:#153326;color:#74e4ac}.notice{font-size:12px;color:#b8aab9;line-height:1.6;margin-top:12px}
-@media(max-width:700px){.app{padding:18px 12px 40px}.stats{gap:8px}.stat{padding:13px}.stat strong{font-size:25px}.stat span{font-size:10px}.form-grid,.scanner-layout{grid-template-columns:1fr}.topbar{align-items:flex-start}.brand{font-size:19px}.hero{padding:20px}.login-card{padding:30px 22px}.moon{width:70px;height:70px;right:7%;top:5%}}
-</style>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#100d12">
+    <title>LA MANSION · Control de acceso</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap">
+    <style>
+        :root {--bg:#100d12;--panel:#1a151d;--panel-border:#2e2532;--orange:#f97316;--orange-hover:#ea580c;--text:#f3f4f6;--muted:#9ca3af;}
+        *{box-sizing:border-box}
+        body{margin:0;background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;}
+        h1,h2,h3,.brand{font-family:'Cinzel',serif;}
+        .login-wrap{width:100%;max-width:420px;background:var(--panel);border:1px solid var(--panel-border);border-radius:16px;padding:32px;text-align:center;box-shadow:0 10px 25px rgba(0,0,0,0.5);display:none;}
+        .login-wrap.active{display:block;}
+        .app-wrap{width:100%;max-width:600px;display:none;}
+        .app-header{display:flex;justify-content:space-between;align-items:center;background:var(--panel);border:1px solid var(--panel-border);padding:16px 24px;border-radius:12px;margin-bottom:20px;}
+        .tabs{display:flex;gap:8px;margin-bottom:20px;}
+        .tab-btn{flex:1;background:var(--panel);border:1px solid var(--panel-border);color:var(--muted);padding:12px;border-radius:8px;cursor:pointer;font-weight:600;transition:0.2s;}
+        .tab-btn.active{background:var(--orange);color:#fff;border-color:var(--orange);}
+        .panel{background:var(--panel);border:1px solid var(--panel-border);border-radius:12px;padding:24px;display:none;}
+        .panel.active{display:block;}
+        .field{margin-bottom:16px;text-align:left;}
+        label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;}
+        input,select{width:100%;background:#100d12;border:1px solid var(--panel-border);color:var(--text);padding:12px;border-radius:8px;font-size:15px;}
+        input:focus,select:focus{outline:none;border-color:var(--orange);}
+        .btn-primary{width:100%;background:var(--orange);color:#fff;border:none;padding:14px;border-radius:8px;font-weight:700;cursor:pointer;font-size:16px;transition:0.2s;}
+        .btn-primary:hover{background:var(--orange-hover);}
+        .error{color:#ef4444;font-size:13px;margin-top:10px;}
+        .ticket-card{background:#100d12;border:1px solid var(--panel-border);border-radius:12px;padding:20px;text-align:center;margin-top:20px;}
+        .ticket-card img{margin-bottom:12px;border-radius:8px;background:#fff;padding:8px;}
+        .btn-download{display:inline-block;background:#374151;color:#fff;text-decoration:none;padding:8px 16px;border-radius:6px;font-size:14px;margin-top:12px;}
+        .btn-download:hover{background:#4b5563;}
+        .list-item{display:flex;justify-content:space-between;padding:12px;border-bottom:1px solid var(--panel-border);font-size:14px;}
+    </style>
 </head>
 <body>
-<section id="login" class="login-wrap">
-  <div class="moon"></div><div class="bat one">🦇</div><div class="bat two">🦇</div>
-  <form id="loginForm" class="login-card">
-    <div class="emblem">🎃</div><h1>LA MANSION</h1><div class="subtitle">CONTROL DE ACCESO</div>
-    <p class="hint">La noche te espera. Ingresa si te atreves.</p>
-    <div class="field"><label for="username">USUARIO</label><input id="username" autocomplete="username" placeholder="Escribe tu usuario" required></div>
-    <div class="field"><label for="password">CONTRASEÑA</label><input id="password" type="password" autocomplete="current-password" placeholder="Escribe tu contraseña" required></div>
-    <button class="primary" type="submit">✦ &nbsp; INGRESAR</button><div id="loginError" class="error" role="alert"></div>
-    <div class="tiny">☾ &nbsp; SOLO PERSONAL AUTORIZADO &nbsp; ☽</div>
-  </form>
-</section>
-<main id="app" class="app hidden">
-  <header class="topbar"><div class="brand"><span class="brand-icon">🎃</span><span>LA MANSION<small>HALLOWEEN · ACCESS CONTROL</small></span></div><button id="logout" class="logout">↪ Salir</button></header>
-  <section class="hero"><div class="eyebrow">BIENVENIDO AL LADO OSCURO</div><h2>El acceso está en tus manos.</h2><p>Genera entradas, escanea códigos y controla quién cruza las puertas de La Mansion.<br>Los cambios se comparten entre todos los dispositivos conectados a esta misma web.</p></section>
-  <section class="stats"><div class="stat"><span>ENTRADAS GENERADAS</span><strong id="total">0</strong></div><div class="stat"><span>VALIDADAS</span><strong id="used" class="orange">0</strong></div><div class="stat"><span>POR INGRESAR</span><strong id="pending">0</strong></div></section>
-  <nav class="tabs"><button class="tab active" data-tab="generate">✦ Generar QR</button><button class="tab" data-tab="scan">⌁ Validar acceso</button><button class="tab" data-tab="list">☷ Entradas</button></nav>
-  <section id="generate" class="panel tab-panel"><h3>Crear entradas</h3><p class="muted">Cada QR se crea una sola vez y tiene un código secreto único.</p>
-    <form id="generateForm" class="form-grid">
-      <div class="field"><label>NOMBRE (OPCIONAL)</label><input id="guest" maxlength="100" placeholder="Ej. Invitado o grupo"></div>
-      <div class="field"><label>TIPO DE ENTRADA</label><select id="ticketType"><option>General</option><option>VIP</option><option>Lista</option><option>Staff</option></select></div>
-      <div class="field"><label>CANTIDAD (MÁX. 100)</label><input id="amount" type="number" min="1" max="100" value="1" required></div>
-      <button class="primary" type="submit">GENERAR CÓDIGO(S)</button>
-    </form><div id="generateError" class="error"></div><div id="ticketResults" class="result-grid"></div>
-  </section>
-  <section id="scan" class="panel tab-panel hidden"><h3>Validar entrada</h3><p class="muted">Escanea con la cámara o introduce el código manualmente.</p>
-    <div class="scanner-layout"><div class="scanbox"><b>Escáner de cámara</b><div id="reader"></div><button id="startCamera" class="primary" type="button">ACTIVAR CÁMARA</button><p class="notice">La cámara requiere permiso del navegador y normalmente una conexión HTTPS. Si no funciona, utiliza el código manual.</p></div>
-    <div class="scanbox"><b>Validación manual</b><form id="manualForm"><input id="manualCode" placeholder="Pega aquí el código QR" autocomplete="off" required><button class="primary" type="submit">VALIDAR ENTRADA</button></form><div id="scanResult" class="scan-result hidden" aria-live="polite"></div></div></div>
-  </section>
-  <section id="list" class="panel tab-panel hidden"><h3>Registro de entradas</h3><p class="muted">Listado de entradas creadas y estado de validación.</p><button id="refreshList" class="tab" style="margin:10px 0 16px">↻ Actualizar lista</button><div class="table-wrap"><table><thead><tr><th>NOMBRE</th><th>TIPO</th><th>ESTADO</th><th>CREADA</th></tr></thead><tbody id="ticketRows"><tr><td colspan="4">Cargando…</td></tr></tbody></table></div></section>
-  <p class="notice">⚠️ Para que varios móviles compartan el mismo estado, todos deben acceder a la misma web publicada. Este proyecto usa una base de datos en el servidor; no es suficiente abrir el archivo HTML por separado en cada móvil.</p>
-</main>
-<script>
-const $ = id => document.getElementById(id);
-let cameraActive = false;
-async function api(url, options={}) {
-  const r = await fetch(url,{...options,headers:{'Content-Type':'application/json',...(options.headers||{})}});
-  const data = await r.json().catch(()=>({}));
-  if(!r.ok) { const e = new Error(data.error || data.message || 'Ocurrió un error.'); e.data=data; e.status=r.status; throw e; }
-  return data;
-}
-function showApp(){ $('login').classList.add('hidden'); $('app').classList.remove('hidden'); refreshStats(); }
-async function checkSession(){try{const m=await api('/api/me');if(m.authenticated)showApp()}catch{}}
-$('loginForm').addEventListener('submit',async e=>{e.preventDefault();$('loginError').textContent='';try{await api('/api/login',{method:'POST',body:JSON.stringify({username:$('username').value,password:$('password').value})});showApp()}catch(err){$('loginError').textContent=err.message;$('password').value=''}});
-$('logout').addEventListener('click',async()=>{if(cameraActive)stopCamera();await api('/api/logout',{method:'POST'});$('app').classList.add('hidden');$('login').classList.remove('hidden');$('password').value=''});
-document.querySelectorAll('.tab').forEach(b=>{if(!b.dataset.tab)return;b.addEventListener('click',()=>{document.querySelectorAll('.tab[data-tab]').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.tab-panel').forEach(x=>x.classList.toggle('hidden',x.id!==b.dataset.tab));if(b.dataset.tab==='list')loadList();if(b.dataset.tab==='scan'){};});});
-async function refreshStats(){try{const s=await api('/api/stats');$('total').textContent=s.total;$('used').textContent=s.used;$('pending').textContent=s.pending}catch{}}
-$('generateForm').addEventListener('submit',async e=>{e.preventDefault();$('generateError').textContent='';$('ticketResults').innerHTML='';try{const data=await api('/api/tickets',{method:'POST',body:JSON.stringify({guest:$('guest').value, ticketType:$('ticketType').value, amount:$('amount').value})});for(const t of data.tickets){const card=document.createElement('div');card.className='ticket';const img=document.createElement('img');img.src=t.qr;img.alt='QR de entrada';const name=document.createElement('b');name.textContent=t.guest||'Entrada sin nombre';const type=document.createElement('small');type.textContent=t.ticketType+' · '+t.id.slice(0,8);const download=document.createElement('button');download.textContent='Descargar QR';download.onclick=()=>{const a=document.createElement('a');a.href=t.qr;a.download='LA-MANSION-'+t.id.slice(0,8)+'.png';a.click()};card.append(img,name,type,document.createElement('br'),download);$('ticketResults').append(card)}refreshStats()}catch(err){$('generateError').textContent=err.message}});
-function parseQr(text){try{const obj=JSON.parse(text);if(obj&&obj.event==='LA MANSION'&&obj.code)return obj.code}catch{}return text.trim()}
-async function validateCode(raw){let code=parseQr(raw);$('scanResult').className='scan-result';$('scanResult').classList.remove('hidden');$('scanResult').innerHTML='<h3>Comprobando…</h3>';try{const d=await api('/api/validate',{method:'POST',body:JSON.stringify({code})});renderResult('good',d.message,d.ticket)}catch(err){const d=err.data||{};renderResult('bad',d.message||err.message,d.ticket)}refreshStats();if(!$('list').classList.contains('hidden'))loadList()}
-function renderResult(kind,message,ticket){const box=$('scanResult');box.className='scan-result '+kind;box.replaceChildren();const h=document.createElement('h3');h.textContent=kind==='good'?'✓ '+message:'✕ '+message;box.append(h);if(ticket){const p=document.createElement('p');p.textContent=(ticket.guest||'Entrada sin nombre')+' · '+ticket.ticket_type;box.append(p);if(ticket.used_at){const small=document.createElement('small');small.textContent='Validación: '+new Date(ticket.used_at).toLocaleString('es-PE');box.append(small)}}}
-$('manualForm').addEventListener('submit',e=>{e.preventDefault();validateCode($('manualCode').value);$('manualCode').value=''});
-async function loadScannerLib(){if(window.Html5Qrcode)return;await new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';s.onload=resolve;s.onerror=reject;document.head.append(s)})}
-async function startCamera(){try{await loadScannerLib();const scanner=new Html5Qrcode('reader');window.mansionScanner=scanner;await scanner.start({facingMode:'environment'},{fps:10,qrbox:{width:230,height:230}},async decoded=>{await scanner.stop();cameraActive=false;$('startCamera').textContent='VOLVER A ACTIVAR CÁMARA';validateCode(decoded)},()=>{});cameraActive=true;$('startCamera').textContent='CÁMARA ACTIVADA'}catch(e){renderResult('bad','No se pudo abrir la cámara. Revisa permisos y conexión HTTPS.');}}
-async function stopCamera(){try{if(window.mansionScanner)await window.mansionScanner.stop()}catch{}cameraActive=false}
-$('startCamera').addEventListener('click',startCamera);
-async function loadList(){try{const rows=await api('/api/tickets');const body=$('ticketRows');body.replaceChildren();if(!rows.length){body.innerHTML='<tr><td colspan="4">Todavía no hay entradas.</td></tr>';return}for(const t of rows){const tr=document.createElement('tr');const name=document.createElement('td');name.textContent=t.guest||'Sin nombre';const type=document.createElement('td');type.textContent=t.ticket_type;const status=document.createElement('td');const badge=document.createElement('span');badge.className='status '+(t.used_at?'used':'pending');badge.textContent=t.used_at?'VALIDADA':'PENDIENTE';status.append(badge);const created=document.createElement('td');created.textContent=new Date(t.created_at).toLocaleString('es-PE');tr.append(name,type,status,created);body.append(tr)}}catch(err){$('ticketRows').innerHTML='<tr><td colspan="4">No se pudo cargar el listado.</td></tr>'}}
-$('refreshList').addEventListener('click',loadList);
-checkSession();
-</script>
-</body></html>
+
+    <!-- LOGIN -->
+    <div id="login" class="login-wrap active">
+        <h2 style="color:var(--orange);margin-bottom:8px;">LA MANSION</h2>
+        <p style="color:var(--muted);font-size:14px;margin-bottom:24px;">Control de acceso exclusivo</p>
+        <form id="loginForm">
+            <div class="field">
+                <label>Usuario</label>
+                <input type="text" id="username" required placeholder="Escribe tu usuario">
+            </div>
+            <div class="field">
+                <label>Contraseña</label>
+                <input type="password" id="password" required placeholder="Escribe tu contraseña">
+            </div>
+            <button type="submit" class="btn-primary">Ingresar</button>
+            <div id="loginError" class="error"></div>
+        </form>
+    </div>
+
+    <!-- APP PRINCIPAL -->
+    <div id="app" class="app-wrap">
+        <div class="app-header">
+            <h3 style="margin:0;color:var(--orange);">LA MANSION</h3>
+            <button id="logout" style="background:none;border:1px solid var(--panel-border);color:var(--muted);padding:6px 12px;border-radius:6px;cursor:pointer;">Salir</button>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" data-target="panel-create">Crear QR</button>
+            <button class="tab-btn" data-target="panel-list" onclick="loadList()">Ver Entradas</button>
+        </div>
+
+        <!-- Panel Crear -->
+        <div id="panel-create" class="panel active">
+            <h3 style="margin-top:0;">Generar Nueva Entrada</h3>
+            <form id="generateForm">
+                <div class="field">
+                    <label>Nombre del Invitado</label>
+                    <input type="text" id="guest" placeholder="Ej. Juan Pérez">
+                </div>
+                <div class="field">
+                    <label>Tipo de Entrada</label>
+                    <select id="ticketType">
+                        <option value="General">General</option>
+                        <option value="VIP">VIP</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Cantidad</label>
+                    <input type="number" id="quantity" value="1" min="1" max="50">
+                </div>
+                <button type="submit" class="btn-primary">Generar Código(s)</button>
+            </form>
+            <div id="resultContainer"></div>
+        </div>
+
+        <!-- Panel Listar -->
+        <div id="panel-list" class="panel">
+            <h3 style="margin-top:0;">Entradas Registradas</h3>
+            <div id="ticketList" style="max-height:350px;overflow-y:auto;">
+                <p style="color:var(--muted);text-align:center;">Cargando lista...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const $ = id => document.getElementById(id);
+
+        async function api(url, options={}) {
+            const r = await fetch(url, {...options, headers: {'Content-Type': 'application/json', ...options.headers}});
+            const data = await r.json().catch(() => ({}));
+            if(!r.ok) throw new Error(data.error || 'Error en la petición');
+            return data;
+        }
+
+        function showApp(){ 
+            $('login').classList.remove('active');$('app').style.display='block'; 
+        }
+
+        async function checkSession(){
+            try {
+                const res = await api('/api/tickets');
+                if(res && res.tickets) showApp();
+            } catch(e) {
+                $('login').classList.add('active');$('app').style.display='none';
+            }
+        }
+
+        $('loginForm').addEventListener('submit', async e => {
+            e.preventDefault();
+            try {
+                const username = $('username').value;
+                const password = $('password').value;
+                await api('/api/login', {method:'POST', body: JSON.stringify({username, password})});
+                showApp();
+            } catch(err) {
+                $('loginError').textContent = err.message;
+            }
+        });
+
+        $('logout').addEventListener('click', async () => {
+            await api('/api/logout', {method:'POST'});
+            location.reload();
+        });
+
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+                btn.classList.add('active');
+                $(btn.dataset.target).classList.add('active');
+            });
+        });
+
+        $('generateForm').addEventListener('submit', async e => {
+            e.preventDefault();
+            const guest = $('guest').value;
+            const ticket_type = $('ticketType').value;
+            const quantity = $('quantity').value;
+            try {
+                const res = await api('/api/tickets', {method:'POST', body: JSON.stringify({guest, ticket_type, quantity})});
+                if(res.tickets && res.tickets.length > 0) {
+                    renderResult(res.tickets);
+                }
+            } catch(err) {
+                alert(err.message);
+            }
+        });
+
+        function renderResult(tickets) {
+            const container = $('resultContainer');
+            container.innerHTML = '';
+            tickets.forEach(ticket => {
+                const card = document.createElement('div');
+                card.className = 'ticket-card';
+                card.innerHTML = `
+                    <img src="${ticket.qr_image}" alt="Código QR" style="width:180px;height:180px;"/>
+                    <h4 style="margin:8px 0 4px 0;">${ticket.guest || 'Invitado'}</h4>
+                    <p style="margin:0;color:var(--muted);font-size:13px;">${ticket.ticket_type} · ${ticket.code}</p>
+                    <br>
+                    <a href="${ticket.qr_image}" download="QR_${ticket.code}.png" class="btn-download">Descargar QR</a>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        async function loadList() {
+            try {
+                const res = await api('/api/tickets');
+                const listDiv = $('ticketList');
+                listDiv.innerHTML = '';
+                if(res.tickets && res.tickets.length > 0) {
+                    res.tickets.forEach(t => {
+                        const item = document.createElement('div');
+                        item.className = 'list-item';
+                        item.innerHTML = `<span><b>${t.guest}</b> (${t.ticket_type})<br><small style="color:var(--muted);">${t.code}</small></span> <span style="color:${t.used_at ? '#ef4444':'#10b981'};font-weight:600;">${t.used_at ? 'Usado' : 'Disponible'}</span>`;
+                        listDiv.appendChild(item);
+                    });
+                } else {
+                    listDiv.innerHTML = '<p style="color:var(--muted);text-align:center;">No hay entradas creadas aún.</p>';
+                }
+            } catch(e) { 
+                console.error(e); 
+            }
+        }
+
+        checkSession();
+    </script>
+</body>
+</html>
