@@ -15,9 +15,9 @@
         .login-wrap{width:100%;max-width:420px;background:var(--panel);border:1px solid var(--panel-border);border-radius:16px;padding:32px;text-align:center;box-shadow:0 10px 25px rgba(0,0,0,0.5);display:none;}
         .login-wrap.active{display:block;}
         .app-wrap{width:100%;max-width:600px;display:none;}
-        .app-header{display:flex;justify-content:space-between;align-items:center;background:var(--panel);border:1px solid var(--panel-border);padding:16px 24px;border-radius:12px;margin-bottom:20px;}
-        .tabs{display:flex;gap:8px;margin-bottom:20px;}
-        .tab-btn{flex:1;background:var(--panel);border:1px solid var(--panel-border);color:var(--muted);padding:12px;border-radius:8px;cursor:pointer;font-weight:600;transition:0.2s;}
+        .app-header{display:flex;justify-content:space-between;align-items:center;background:var(--panel);border:1px solid var(--panel-border);padding:16px 24px;border-radius:12px;margin-bottom:16px;}
+        .tabs{display:flex;gap:6px;margin-bottom:20px;}
+        .tab-btn{flex:1;background:var(--panel);border:1px solid var(--panel-border);color:var(--muted);padding:10px 8px;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;transition:0.2s;text-align:center;}
         .tab-btn.active{background:var(--orange);color:#fff;border-color:var(--orange);}
         .panel{background:var(--panel);border:1px solid var(--panel-border);border-radius:12px;padding:24px;display:none;}
         .panel.active{display:block;}
@@ -33,6 +33,9 @@
         .btn-download{display:inline-block;background:#374151;color:#fff;text-decoration:none;padding:8px 16px;border-radius:6px;font-size:14px;margin-top:12px;}
         .btn-download:hover{background:#4b5563;}
         .list-item{display:flex;justify-content:space-between;padding:12px;border-bottom:1px solid var(--panel-border);font-size:14px;}
+        .validation-result{margin-top:16px;padding:16px;border-radius:8px;text-align:center;font-weight:600;display:none;}
+        .validation-result.success{background:rgba(16, 185, 129, 0.15);color:#10b981;border:1px solid #10b981;}
+        .validation-result.error{background:rgba(239, 68, 68, 0.15);color:#ef4444;border:1px solid #ef4444;}
     </style>
 </head>
 <body>
@@ -64,7 +67,8 @@
 
         <div class="tabs">
             <button class="tab-btn active" data-target="panel-create">Crear QR</button>
-            <button class="tab-btn" data-target="panel-list" onclick="loadList()">Ver Entradas</button>
+            <button class="tab-btn" data-target="panel-validate">Validar</button>
+            <button class="tab-btn" data-target="panel-list" onclick="loadList()">Entradas</button>
         </div>
 
         <!-- Panel Crear -->
@@ -89,6 +93,19 @@
                 <button type="submit" class="btn-primary">Generar Código(s)</button>
             </form>
             <div id="resultContainer"></div>
+        </div>
+
+        <!-- Panel Validar -->
+        <div id="panel-validate" class="panel">
+            <h3 style="margin-top:0;">Validar Código de Entrada</h3>
+            <form id="validateForm">
+                <div class="field">
+                    <label>Código del Ticket</label>
+                    <input type="text" id="validateCodeInput" placeholder="Ej. A1B2C3D4" required style="text-transform:uppercase;">
+                </div>
+                <button type="submit" class="btn-primary">Verificar Acceso</button>
+            </form>
+            <div id="validationResult" class="validation-result"></div>
         </div>
 
         <!-- Panel Listar -->
@@ -161,6 +178,28 @@
                 }
             } catch(err) {
                 alert(err.message);
+            }
+        });
+
+        $('validateForm').addEventListener('submit', async e => {
+            e.preventDefault();
+            const code = $('validateCodeInput').value.trim();
+            const resultDiv = $('validationResult');
+            resultDiv.style.display = 'none';
+            try {
+                const res = await api('/api/validate', {method:'POST', body: JSON.stringify({code})});
+                resultDiv.style.display = 'block';
+                if(res.valid) {
+                    resultDiv.className = 'validation-result success';
+                    resultDiv.innerHTML = `¡Acceso Concedido!<br><small>${res.ticket.guest} (${res.ticket.ticket_type})</small>`;
+                } else {
+                    resultDiv.className = 'validation-result error';
+                    resultDiv.innerHTML = res.error || 'Acceso Denegado';
+                }
+            } catch(err) {
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'validation-result error';
+                resultDiv.innerHTML = err.message;
             }
         });
 
