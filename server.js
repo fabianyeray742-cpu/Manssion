@@ -1,14 +1,23 @@
 const express = require("express");
 const session = require("express-session");
-const Database = require("better-sqlite3");
+const sqlite3 = require("sqlite3").verbose();
 const QRCode = require("qrcode");
 const crypto = require("crypto");
 const path = require("path");
 
 const app = express();
-const db = new Database(process.env.DB_FILE || "data.sqlite");
-db.pragma("journal_mode = WAL");
-db.exec(`
+
+const dbFile = process.env.DB_FILE || "data.sqlite";
+const db = new sqlite3.Database(dbFile, (err) => {
+  if (err) {
+    console.error("Error al abrir la base de datos", err.message);
+  } else {
+    console.log("Conectado a la base de datos SQLite.");
+  }
+});
+
+db.run("PRAGMA journal_mode = WAL;");
+db.run(`
   CREATE TABLE IF NOT EXISTS tickets (
     id TEXT PRIMARY KEY,
     code TEXT UNIQUE NOT NULL,
@@ -47,48 +56,80 @@ app.post("/api/logout", (req, res) => req.session.destroy(() => res.json({ ok: t
 app.get("/api/me", (req, res) => res.json({ authenticated: !!req.session?.authenticated, username: req.session?.username || null }));
 
 app.get("/api/stats", requireAuth, (req, res) => {
-  const total = db.prepare("SELECT COUNT(*) n FROM tickets").get().n;
-  const used = db.prepare("SELECT COUNT(*) n FROM tickets WHERE used_at IS NOT NULL").get().n;
-  res.json({ total, used, pending: total - used });
+  db.get("SELECT COUNT(*) as total, SUM(CASE WHEN used_at IS NOT NULL THEN 1 ELSE 0 END) as used FROM tickets", [], (err, row) => {
+    if (err) return res.status(500).json({ error: err.message });
+    const total = row?.total || 0;
+    const used = row?.used || 0;
+    res.json({ total, used, pending: total - used });
+  });
 });
+
 app.get("/api/tickets", requireAuth, (req, res) => {
-  const rows = db.prepare("SELECT id, guest, ticket_type, created_at, used_at FROM tickets ORDER BY created_at DESC LIMIT 500").all();
-  res.json(rows);
+  db.all("SELECT id, guest, ticket_type, created_at, used_at FROM tickets ORDER BY created_at DESC LIMIT 500", [], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(rows || []);
+  });
 });
+
 app.post("/api/tickets", requireAuth, async (req, res) => {
   const guest = String(req.body?.guest || "").trim().slice(0, 100);
   const ticketType = String(req.body?.ticketType || "General").trim().slice(0, 40) || "General";
   const amount = Math.max(1, Math.min(100, Number.parseInt(req.body?.amount, 10) || 1));
   const created = [];
-  const insert = db.prepare("INSERT INTO tickets (id, code, guest, ticket_type, created_at) VALUES (?, ?, ?, ?, ?)");
-  const batch = db.transaction(() => {
+
+  db.serialize(() => {
+    db.run("BEGIN TRANSACTION");
+    const stmt = db.prepare("INSERT INTO tickets (id, code, guest, ticket_type, created_at) VALUES (?, ?, ?, ?, ?)");
     for (let i = 0; i < amount; i++) {
       const id = crypto.randomUUID();
       const code = crypto.randomBytes(24).toString("hex");
-      insert.run(id, code, guest, ticketType, new Date().toISOString());
+      const createdAt = new Date().toISOString();
+      stmt.run(id, code, guest, ticketType, createdAt);
       created.push({ id, code, guest, ticketType });
     }
+    stmt.finalize();
+    db.run("COMMIT", async (err) => {
+      if (err) return res.status(500).json({ error: err.message });
+      try {
+        const withQr = await Promise.all(created.map(async t => ({ 
+          ...t, 
+          qr: await QRCode.toDataURL(JSON.stringify({ event: "LA MANSION", code: t.code }), { margin: 1, width: 320, errorCorrectionLevel: "M" }) 
+        })));
+        res.json({ tickets: withQr });
+      } catch (e) {
+        res.status(500).json({ error: "Error generando códigos QR" });
+      }
+    });
   });
-  batch();
-  const withQr = await Promise.all(created.map(async t => ({ ...t, qr: await QRCode.toDataURL(JSON.stringify({ event: "LA MANSION", code: t.code }), { margin: 1, width: 320, errorCorrectionLevel: "M" }) })));
-  res.json({ tickets: withQr });
 });
+
 app.post("/api/validate", requireAuth, (req, res) => {
   const code = String(req.body?.code || "").trim();
   if (!code) return res.status(400).json({ status: "invalid", message: "No se detectó ningún código." });
-  const ticket = db.prepare("SELECT id, guest, ticket_type, created_at, used_at FROM tickets WHERE code = ?").get(code);
-  if (!ticket) return res.status(404).json({ status: "invalid", message: "QR no reconocido. Entrada no válida." });
-  if (ticket.used_at) return res.status(409).json({ status: "used", message: "ENTRADA YA VALIDADA", ticket });
-  // Atomic conditional update prevents two devices from validating the same ticket simultaneously.
-  const result = db.prepare("UPDATE tickets SET used_at = ? WHERE id = ? AND used_at IS NULL").run(new Date().toISOString(), ticket.id);
-  if (result.changes !== 1) {
-    const latest = db.prepare("SELECT id, guest, ticket_type, created_at, used_at FROM tickets WHERE id = ?").get(ticket.id);
-    return res.status(409).json({ status: "used", message: "ENTRADA YA VALIDADA", ticket: latest });
-  }
-  const validated = db.prepare("SELECT id, guest, ticket_type, created_at, used_at FROM tickets WHERE id = ?").get(ticket.id);
-  res.json({ status: "valid", message: "ACCESO PERMITIDO", ticket: validated });
+
+  db.get("SELECT id, guest, ticket_type, created_at, used_at FROM tickets WHERE code = ?", [code], (err, ticket) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (!ticket) return res.status(404).json({ status: "invalid", message: "QR no reconocido. Entrada no válida." });
+    if (ticket.used_at) return res.status(409).json({ status: "used", message: "ENTRADA YA VALIDADA", ticket });
+
+    const now = new Date().toISOString();
+    db.run("UPDATE tickets SET used_at = ? WHERE id = ? AND used_at IS NULL", [now, ticket.id], function(updateErr) {
+      if (updateErr) return res.status(500).json({ error: updateErr.message });
+      if (this.changes !== 1) {
+        db.get("SELECT id, guest, ticket_type, created_at, used_at FROM tickets WHERE id = ?", [ticket.id], (err2, latest) => {
+          return res.status(409).json({ status: "used", message: "ENTRADA YA VALIDADA", ticket: latest });
+        });
+        return;
+      }
+      db.get("SELECT id, guest, ticket_type, created_at, used_at FROM tickets WHERE id = ?", [ticket.id], (err3, validated) => {
+        res.json({ status: "valid", message: "ACCESO PERMITIDO", ticket: validated });
+      });
+    });
+  });
 });
 
 app.get("*", (req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
 const port = Number(process.env.PORT || 3000);
 app.listen(port, "0.0.0.0", () => console.log(`LA MANSION listo en http://localhost:${port}`));
+
+
