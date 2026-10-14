@@ -7,7 +7,6 @@
     <title>LA MANSION · Control de acceso</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap">
-    <!-- Librería para escanear QR con la cámara -->
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
         :root {--bg:#100d12;--panel:#1a151d;--panel-border:#2e2532;--orange:#f97316;--orange-hover:#ea580c;--text:#f3f4f6;--muted:#9ca3af;}
@@ -103,7 +102,6 @@
         <div id="panel-validate" class="panel">
             <h3 style="margin-top:0;">Validar Código / Escanear QR</h3>
             
-            <!-- Visor de Cámara -->
             <div id="reader"></div>
             <button id="btnToggleCamera" class="btn-secondary">📷 Abrir Escáner de Cámara</button>
 
@@ -130,6 +128,8 @@
         const $ = id => document.getElementById(id);
         let html5QrcodeScanner = null;
         let isScannerRunning = false;
+        let lastScannedCode = null;
+        let isProcessing = false;
 
         async function api(url, options={}) {
             const r = await fetch(url, {...options, headers: {'Content-Type': 'application/json', ...options.headers}});
@@ -176,7 +176,6 @@
                 btn.classList.add('active');
                 $(btn.dataset.target).classList.add('active');
 
-                // Si se sale de la pestaña de validar, detener la cámara
                 if(btn.dataset.target !== 'panel-validate') {
                     stopCamera();
                 }
@@ -198,16 +197,19 @@
             }
         });
 
-        // Función para enviar código a validar al servidor
         async function processValidation(code) {
+            if (isProcessing) return;
+            isProcessing = true;
             const resultDiv = $('validationResult');
             resultDiv.style.display = 'none';
+
             try {
                 const res = await api('/api/validate', {method:'POST', body: JSON.stringify({code})});
                 resultDiv.style.display = 'block';
                 if(res.valid) {
                     resultDiv.className = 'validation-result success';
                     resultDiv.innerHTML = `✅ ¡Acceso Concedido!<br><small>${res.ticket.guest} (${res.ticket.ticket_type})</small>`;
+                    stopCamera(); // Detiene la cámara al validar con éxito para evitar dobles lecturas
                 } else {
                     resultDiv.className = 'validation-result error';
                     resultDiv.innerHTML = `❌ ${res.error || 'Acceso Denegado'}`;
@@ -216,6 +218,8 @@
                 resultDiv.style.display = 'block';
                 resultDiv.className = 'validation-result error';
                 resultDiv.innerHTML = `❌ ${err.message}`;
+            } finally {
+                setTimeout(() => { isProcessing = false; }, 1500); // Pausa anti-rebote de 1.5 segundos
             }
         }
 
@@ -225,7 +229,6 @@
             if(code) processValidation(code);
         });
 
-        // Controles de Cámara
         $('btnToggleCamera').addEventListener('click', () => {
             if(isScannerRunning) {
                 stopCamera();
@@ -241,13 +244,15 @@
                 { facingMode: "environment" },
                 { fps: 10, qrbox: { width: 220, height: 220 } },
                 (decodedText) => {
-                    // Al escanear exitosamente
-                    $('validateCodeInput').value = decodedText;
-                    processValidation(decodedText);
+                    if (decodedText !== lastScannedCode && !isProcessing) {
+                        lastScannedCode = decodedText;
+                        $('validateCodeInput').value = decodedText;
+                        processValidation(decodedText);
+                        // Permitir reescanear el mismo código después de 5 segundos si fuera necesario
+                        setTimeout(() => { lastScannedCode = null; }, 5000);
+                    }
                 },
-                (errorMessage) => {
-                    // Ignorar errores continuos de búsqueda de frame
-                }
+                (errorMessage) => {}
             ).then(() => {
                 isScannerRunning = true;
                 $('btnToggleCamera').textContent = "⏹ Detener Cámara";
