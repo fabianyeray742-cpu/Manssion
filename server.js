@@ -68,43 +68,57 @@ app.post("/api/logout", (req, res) => {
     res.json({ success: true });
 });
 
-// Generar Ticket
+// Generar Ticket(s) soportando cantidad
 app.post("/api/tickets", requireAuth, (req, res) => {
-    const { guest, ticket_type } = req.body;
-    const id = crypto.randomUUID();
-    const code = crypto.randomBytes(4).toString("hex").toUpperCase();
-    const created_at = new Date().toISOString();
+    const { guest, ticket_type, quantity } = req.body;
+    const count = parseInt(quantity) || 1;
+    const createdTickets = [];
 
-    db.run(
-        `INSERT INTO tickets (id, code, guest, ticket_type, created_at) VALUES (?, ?, ?, ?, ?)`,
-        [id, code, guest || "Invitado", ticket_type || "General", created_at],
-        function (err) {
-            if (err) {
-                return res.status(500).json({ error: err.message });
-            }
-            QRCode.toDataURL(code, (err, qr_image) => {
-                if (err) {
-                    return res.status(500).json({ error: "Error generando QR" });
+    let completed = 0;
+    for (let i = 0; i < count; i++) {
+        const id = crypto.randomUUID();
+        const code = crypto.randomBytes(4).toString("hex").toUpperCase();
+        const created_at = new Date().toISOString();
+
+        db.run(
+            `INSERT INTO tickets (id, code, guest, ticket_type, created_at) VALUES (?, ?, ?, ?, ?)`,
+            [id, code, guest || "Invitado", ticket_type || "General", created_at],
+            function (err) {
+                if (!err) {
+                    QRCode.toDataURL(code, (err, qr_image) => {
+                        createdTickets.push({ id, code, guest, ticket_type, qr_image, created_at });
+                        completed++;
+                        if (completed === count) {
+                            res.json({ success: true, tickets: createdTickets });
+                        }
+                    });
+                } else {
+                    completed++;
+                    if (completed === count && createdTickets.length === 0) {
+                        res.status(500).json({ error: err.message });
+                    }
                 }
-                res.json({ id, code, guest, ticket_type, qr_image });
-            });
-        }
-    );
+            }
+        );
+    }
 });
 
-// Listar Tickets
+// Listar Tickets con la propiedad que espera el cliente
 app.get("/api/tickets", requireAuth, (req, res) => {
     db.all(`SELECT * FROM tickets ORDER BY created_at DESC`, [], (err, rows) => {
         if (err) {
             return res.status(500).json({ error: err.message });
         }
-        res.json(rows);
+        res.json({ tickets: rows });
     });
 });
 
 // Validar Ticket por Código
 app.post("/api/validate", requireAuth, (req, res) => {
     const { code } = req.body;
+    if (!code) {
+        return res.status(400).json({ valid: false, error: "Código requerido" });
+    }
     db.get(`SELECT * FROM tickets WHERE code = ?`, [code.trim().toUpperCase()], (err, ticket) => {
         if (err) {
             return res.status(500).json({ error: err.message });
