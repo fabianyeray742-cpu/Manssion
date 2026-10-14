@@ -32,13 +32,19 @@
         .error{color:#ef4444;font-size:13px;margin-top:10px;}
         .ticket-card{background:#100d12;border:1px solid var(--panel-border);border-radius:12px;padding:20px;text-align:center;margin-top:20px;}
         .ticket-card img{margin-bottom:12px;border-radius:8px;background:#fff;padding:8px;}
-        .btn-download{display:inline-block;background:#374151;color:#fff;text-decoration:none;padding:10px 18px;border-radius:6px;font-size:14px;margin-top:12px;cursor:pointer;font-weight:600;}
+        .btn-download{display:inline-block;background:#374151;color:#fff;border:none;padding:10px 18px;border-radius:6px;font-size:14px;margin-top:12px;cursor:pointer;font-weight:600;}
         .btn-download:hover{background:#4b5563;}
         .list-item{display:flex;justify-content:space-between;padding:12px;border-bottom:1px solid var(--panel-border);font-size:14px;}
         .validation-result{margin-top:16px;padding:16px;border-radius:8px;text-align:center;font-weight:600;display:none;font-size:16px;}
         .validation-result.success{background:rgba(16, 185, 129, 0.15);color:#10b981;border:1px solid #10b981;}
         .validation-result.error{background:rgba(239, 68, 68, 0.15);color:#ef4444;border:1px solid #ef4444;}
         #reader{width:100%;border-radius:8px;overflow:hidden;background:#000;margin-bottom:16px;}
+        
+        /* Estilo para el Modal de Pantalla Completa */
+        #qrModal {position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);display:none;justify-content:center;align-items:center;z-index:9999;padding:20px;}
+        .modal-content{background:var(--panel);border:1px solid var(--panel-border);padding:24px;border-radius:16px;text-align:center;max-width:320px;width:100%;}
+        .modal-content img{width:220px;height:220px;background:#fff;padding:8px;border-radius:8px;margin-bottom:16px;}
+        .btn-close{background:#ef4444;color:#fff;border:none;padding:10px;border-radius:8px;width:100%;font-weight:700;cursor:pointer;margin-top:12px;}
     </style>
 </head>
 <body>
@@ -121,6 +127,16 @@
             <div id="ticketList" style="max-height:350px;overflow-y:auto;">
                 <p style="color:var(--muted);text-align:center;">Cargando lista...</p>
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL PARA VER Y GUARDAR QR -->
+    <div id="qrModal">
+        <div class="modal-content">
+            <h3 id="modalTitle" style="margin-top:0;color:var(--orange);">Código QR</h3>
+            <img id="modalImage" src="" alt="QR Ampliado">
+            <p style="font-size:12px;color:var(--muted);margin:0 0 12px 0;">Mantén presionada la imagen para guardarla en tu celular.</p>
+            <button class="btn-close" onclick="closeModal()">Cerrar</button>
         </div>
     </div>
 
@@ -254,7 +270,7 @@
                 (errorMessage) => {}
             ).then(() => {
                 isScannerRunning = true;
-                $('btnToggleCommand').textContent = "⏹ Detener Cámara";
+                $('btnToggleCamera').textContent = "⏹ Detener Cámara";
             }).catch(err => {
                 alert("No se pudo acceder a la cámara o requiere permisos.");
             });
@@ -281,16 +297,20 @@
                     <h4 style="margin:8px 0 4px 0;">${ticket.guest || 'Invitado'}</h4>
                     <p style="margin:0;color:var(--muted);font-size:13px;">${ticket.ticket_type} · ${ticket.code}</p>
                     <br>
-                    <button class="btn-download" onclick="openQR('${ticket.qr_image}')">Ver / Guardar Imagen</button>
+                    <button class="btn-download" onclick="openModal('${ticket.qr_image}', '${ticket.guest}')">Ver / Guardar Imagen</button>
                 `;
                 container.appendChild(card);
             });
         }
 
-        // Abre la imagen en una nueva pestaña limpia para mantener presionada y guardar en fotos
-        function openQR(dataUrl) {
-            const win = window.open();
-            win.document.write(`<iframe src="${dataUrl}" frameborder="0" style="border:0; top:0; left:0; bottom:0; right:0; width:100%; height:100%;" allowfullscreen></iframe>`);
+        function openModal(dataUrl, guestName) {
+            $('modalTitle').textContent = guestName ? `QR · ${guestName}` : 'Código QR';
+            $('modalImage').src = dataUrl;
+            $('qrModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            $('qrModal').style.display = 'none';
         }
 
         async function loadList() {
